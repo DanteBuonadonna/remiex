@@ -4,9 +4,12 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { Link } from "react-router-dom";
 
 const HeroSection = () => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+
+  console.log('HeroSection - user:', user?.email, 'loading:', loading);
 
   const scrollToUpload = () => {
+    console.log('Scroll to upload clicked');
     const uploadSection = document.getElementById('upload-section');
     if (uploadSection) {
       uploadSection.scrollIntoView({ behavior: 'smooth' });
@@ -42,13 +45,26 @@ const HeroSection = () => {
 
         {/* Simple CTA */}
         <div className="space-y-4 -mt-4">
-          {user ? (
-            <Button size="lg" variant="hero" className="text-lg px-8 py-4" onClick={scrollToUpload}>
+           {user ? (
+            <Button 
+              size="lg" 
+              variant="hero" 
+              className="text-lg px-8 py-4" 
+              onClick={() => {
+                console.log('User button clicked');
+                scrollToUpload();
+              }}
+            >
               Upload Screenshots & Start
             </Button>
           ) : (
             <Link to="/auth">
-              <Button size="lg" variant="hero" className="text-lg px-8 py-4">
+              <Button 
+                size="lg" 
+                variant="hero" 
+                className="text-lg px-8 py-4"
+                onClick={() => console.log('Auth button clicked')}
+              >
                 Get Started Free
               </Button>
             </Link>
