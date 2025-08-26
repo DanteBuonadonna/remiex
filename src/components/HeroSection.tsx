@@ -1,7 +1,18 @@
 import { Button } from "@/components/ui/button";
 import { MessageCircle } from "lucide-react";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { Link } from "react-router-dom";
 
 const HeroSection = () => {
+  const { user } = useAuth();
+
+  const scrollToUpload = () => {
+    const uploadSection = document.getElementById('upload-section');
+    if (uploadSection) {
+      uploadSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <section className="min-h-screen flex items-center justify-center px-6">
       <div className="max-w-4xl mx-auto text-center space-y-12">
@@ -31,9 +42,17 @@ const HeroSection = () => {
 
         {/* Simple CTA */}
         <div className="space-y-4 -mt-4">
-          <Button size="lg" variant="hero" className="text-lg px-8 py-4">
-            Upload Screenshots & Start
-          </Button>
+          {user ? (
+            <Button size="lg" variant="hero" className="text-lg px-8 py-4" onClick={scrollToUpload}>
+              Upload Screenshots & Start
+            </Button>
+          ) : (
+            <Link to="/auth">
+              <Button size="lg" variant="hero" className="text-lg px-8 py-4">
+                Get Started Free
+              </Button>
+            </Link>
+          )}
           <p className="text-sm text-muted-foreground">
             Free to try • No credit card required
           </p>

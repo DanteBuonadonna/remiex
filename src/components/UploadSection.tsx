@@ -1,14 +1,102 @@
+import { useState, useCallback } from "react";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Upload, Image, Smartphone, MessageSquare, CheckCircle } from "lucide-react";
-import { useState } from "react";
+import { Progress } from "@/components/ui/progress";
+import { useToast } from "@/hooks/use-toast";
+import { Upload, FileImage, Smartphone, MessageSquare, CheckCircle } from "lucide-react";
 
 const UploadSection = () => {
-  const [uploadedCount, setUploadedCount] = useState(0);
+  const [uploadedFiles, setUploadedFiles] = useState(0);
+  const [uploading, setUploading] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
+  const { user } = useAuth();
+  const { toast } = useToast();
   const maxFiles = 50;
 
+  const handleFiles = useCallback(async (files: FileList) => {
+    if (!user) return;
+
+    setUploading(true);
+    const fileArray = Array.from(files);
+    let successCount = 0;
+
+    for (const file of fileArray) {
+      try {
+        // Upload to Supabase Storage
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+        const filePath = `${user.id}/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('chat-screenshots')
+          .upload(filePath, file);
+
+        if (uploadError) throw uploadError;
+
+        // Save file record to database
+        const { error: dbError } = await supabase
+          .from('uploaded_files')
+          .insert({
+            user_id: user.id,
+            file_name: file.name,
+            file_path: filePath,
+            file_size: file.size,
+          });
+
+        if (dbError) throw dbError;
+
+        successCount++;
+      } catch (error) {
+        console.error('Upload error:', error);
+        toast({
+          title: "Upload Error",
+          description: `Failed to upload ${file.name}`,
+          variant: "destructive",
+        });
+      }
+    }
+
+    setUploadedFiles(prev => prev + successCount);
+    setUploading(false);
+
+    if (successCount > 0) {
+      toast({
+        title: "Success!",
+        description: `Uploaded ${successCount} file(s) successfully`,
+      });
+    }
+  }, [user, toast]);
+
+  const handleDrag = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleFiles(e.dataTransfer.files);
+    }
+  }, [handleFiles]);
+
+  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      handleFiles(e.target.files);
+    }
+  };
+
   return (
-    <section className="py-20 px-6">
+    <section id="upload-section" className="py-20 px-6">
       <div className="max-w-6xl mx-auto">
         {/* Section Header */}
         <div className="text-center mb-16">
@@ -36,24 +124,42 @@ const UploadSection = () => {
               </div>
 
               {/* Upload Progress */}
-              {uploadedCount > 0 && (
+              {uploadedFiles > 0 && (
                 <div className="space-y-2">
                   <div className="flex items-center justify-center gap-2">
                     <CheckCircle className="w-5 h-5 text-green-500" />
-                    <span className="text-sm font-medium">{uploadedCount} of {maxFiles} files uploaded</span>
+                    <span className="text-sm font-medium">{uploadedFiles} of {maxFiles} files uploaded</span>
                   </div>
                   <div className="w-full bg-muted rounded-full h-2">
                     <div 
                       className="bg-gradient-primary h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${(uploadedCount / maxFiles) * 100}%` }}
+                      style={{ width: `${(uploadedFiles / maxFiles) * 100}%` }}
                     />
                   </div>
                 </div>
               )}
 
-              <div className="border-2 border-dashed border-primary/30 rounded-lg p-12 bg-white/5 hover:bg-white/10 transition-colors cursor-pointer">
+              <div 
+                className={`border-2 border-dashed rounded-lg p-12 transition-colors cursor-pointer relative ${
+                  dragActive 
+                    ? 'border-primary bg-primary/5' 
+                    : 'border-primary/30 bg-white/5 hover:bg-white/10'
+                }`}
+                onDragEnter={handleDrag}
+                onDragLeave={handleDrag}
+                onDragOver={handleDrag}
+                onDrop={handleDrop}
+              >
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={handleFileInput}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  disabled={uploading}
+                />
                 <div className="space-y-4">
-                  <Image className="w-16 h-16 text-primary/60 mx-auto" />
+                  <FileImage className="w-16 h-16 text-primary/60 mx-auto" />
                   <div>
                     <p className="font-medium">Drop screenshots here or click to browse</p>
                     <p className="text-sm text-muted-foreground">Supports PNG, JPG, JPEG files</p>
@@ -62,9 +168,10 @@ const UploadSection = () => {
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={() => setUploadedCount(Math.min(uploadedCount + 5, maxFiles))}
+                    disabled={uploading}
+                    className="pointer-events-none"
                   >
-                    Choose Files
+                    {uploading ? 'Uploading...' : 'Choose Files'}
                   </Button>
                 </div>
               </div>
@@ -112,14 +219,14 @@ const UploadSection = () => {
             <Button 
               variant="hero" 
               size="lg" 
-              disabled={uploadedCount === 0}
+              disabled={uploadedFiles === 0}
               className="min-w-48"
             >
-              {uploadedCount > 0 ? `Create Clone (${uploadedCount} files)` : 'Upload Files First'}
+              {uploadedFiles > 0 ? `Create Clone (${uploadedFiles} files)` : 'Upload Files First'}
             </Button>
-            {uploadedCount > 0 && (
+            {uploadedFiles > 0 && (
               <p className="text-sm text-muted-foreground mt-2">
-                Processing will take about {Math.ceil(uploadedCount / 10)} minute{uploadedCount > 10 ? 's' : ''}
+                Processing will take about {Math.ceil(uploadedFiles / 10)} minute{uploadedFiles > 10 ? 's' : ''}
               </p>
             )}
           </div>
