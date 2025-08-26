@@ -30,7 +30,7 @@ const HeroSection = () => {
         </div>
 
         {/* Simple CTA */}
-        <div className="space-y-4">
+        <div className="space-y-4 -mt-4">
           <Button size="lg" variant="hero" className="text-lg px-8 py-4">
             Upload Screenshots & Start
           </Button>
