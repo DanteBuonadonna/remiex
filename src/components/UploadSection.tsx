@@ -1,104 +1,127 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Upload, Image, Smartphone, MessageSquare } from "lucide-react";
+import { Upload, Image, Smartphone, MessageSquare, CheckCircle } from "lucide-react";
+import { useState } from "react";
 
 const UploadSection = () => {
+  const [uploadedCount, setUploadedCount] = useState(0);
+  const maxFiles = 50;
+
   return (
     <section className="py-20 px-6">
       <div className="max-w-6xl mx-auto">
         {/* Section Header */}
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
-            Upload Your <span className="bg-gradient-primary bg-clip-text text-transparent">Chat History</span>
+            Upload Your <span className="text-primary">Chat Screenshots</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Simply upload screenshots from any messaging app. Our AI analyzes conversation patterns, 
-            emoji usage, tone, and personality to create an authentic clone.
+            Upload up to 50 screenshots from any messaging app. More screenshots = better personality accuracy.
           </p>
         </div>
 
         {/* Upload Interface */}
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Upload Card */}
-          <Card className="p-8 shadow-card border-primary/10 bg-gradient-secondary/50 backdrop-blur-sm">
+        <div className="max-w-2xl mx-auto">
+          <Card className="p-8 shadow-card border-primary/10 bg-gradient-secondary/30">
             <div className="text-center space-y-6">
               <div className="p-6 rounded-full bg-gradient-primary/10 w-fit mx-auto">
                 <Upload className="w-12 h-12 text-primary" />
               </div>
               
               <div>
-                <h3 className="text-2xl font-semibold mb-2">Drag & Drop Screenshots</h3>
+                <h3 className="text-2xl font-semibold mb-2">Drop Your Screenshots Here</h3>
                 <p className="text-muted-foreground">
-                  Upload chat screenshots from iMessage, WhatsApp, Instagram, or any messaging app
+                  Upload up to {maxFiles} chat screenshots from any messaging app
                 </p>
               </div>
+
+              {/* Upload Progress */}
+              {uploadedCount > 0 && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-center gap-2">
+                    <CheckCircle className="w-5 h-5 text-green-500" />
+                    <span className="text-sm font-medium">{uploadedCount} of {maxFiles} files uploaded</span>
+                  </div>
+                  <div className="w-full bg-muted rounded-full h-2">
+                    <div 
+                      className="bg-gradient-primary h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${(uploadedCount / maxFiles) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              )}
 
               <div className="border-2 border-dashed border-primary/30 rounded-lg p-12 bg-white/5 hover:bg-white/10 transition-colors cursor-pointer">
                 <div className="space-y-4">
                   <Image className="w-16 h-16 text-primary/60 mx-auto" />
                   <div>
-                    <p className="font-medium">Drop your screenshots here</p>
-                    <p className="text-sm text-muted-foreground">or click to browse files</p>
+                    <p className="font-medium">Drop screenshots here or click to browse</p>
+                    <p className="text-sm text-muted-foreground">Supports PNG, JPG, JPEG files</p>
+                    <p className="text-xs text-muted-foreground mt-2">Maximum {maxFiles} files</p>
                   </div>
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setUploadedCount(Math.min(uploadedCount + 5, maxFiles))}
+                  >
                     Choose Files
                   </Button>
                 </div>
               </div>
 
-              <div className="flex justify-center gap-4 text-xs text-muted-foreground">
-                <span>📱 iOS Screenshots</span>
+              <div className="flex justify-center gap-6 text-xs text-muted-foreground">
+                <span>📱 iPhone Screenshots</span>
                 <span>🤖 Android Screenshots</span>
                 <span>💻 Desktop Screenshots</span>
               </div>
             </div>
           </Card>
+        </div>
 
-          {/* Supported Apps */}
-          <div className="space-y-8">
-            <h3 className="text-2xl font-semibold text-center lg:text-left">
-              Works with any messaging app
-            </h3>
-            
-            <div className="grid grid-cols-2 gap-4">
-              {[
-                { name: "iMessage", icon: "💬", color: "from-blue-500 to-cyan-500" },
-                { name: "WhatsApp", icon: "📱", color: "from-green-500 to-emerald-500" },
-                { name: "Instagram", icon: "📷", color: "from-pink-500 to-purple-500" },
-                { name: "Discord", icon: "🎮", color: "from-indigo-500 to-purple-500" },
-                { name: "Telegram", icon: "✈️", color: "from-sky-500 to-blue-500" },
-                { name: "Messenger", icon: "💙", color: "from-blue-500 to-indigo-500" },
-              ].map((app) => (
-                <Card key={app.name} className="p-4 hover:shadow-card transition-all duration-300 hover:scale-105 cursor-pointer">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-lg bg-gradient-to-r ${app.color} flex items-center justify-center text-white text-lg`}>
-                      {app.icon}
-                    </div>
-                    <span className="font-medium">{app.name}</span>
-                  </div>
-                </Card>
-              ))}
-            </div>
+        {/* Tips Section */}
+        <div className="mt-16 max-w-4xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Tips Cards */}
+            <Card className="p-6 text-center hover:shadow-card transition-all duration-300">
+              <MessageSquare className="w-10 h-10 text-primary mx-auto mb-4" />
+              <h4 className="font-semibold mb-2">More is Better</h4>
+              <p className="text-sm text-muted-foreground">
+                Upload 20+ screenshots for the most accurate personality cloning
+              </p>
+            </Card>
 
-            {/* Process Steps */}
-            <div className="space-y-4 mt-8">
-              <h4 className="font-semibold text-lg">How it works:</h4>
-              <div className="space-y-3">
-                {[
-                  { step: "1", text: "Upload chat screenshots", icon: Upload },
-                  { step: "2", text: "AI analyzes personality patterns", icon: MessageSquare },
-                  { step: "3", text: "Start chatting with your clone", icon: Smartphone },
-                ].map(({ step, text, icon: Icon }) => (
-                  <div key={step} className="flex items-center gap-4">
-                    <div className="w-8 h-8 rounded-full bg-gradient-primary text-white flex items-center justify-center text-sm font-bold">
-                      {step}
-                    </div>
-                    <Icon className="w-5 h-5 text-primary" />
-                    <span className="text-muted-foreground">{text}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <Card className="p-6 text-center hover:shadow-card transition-all duration-300">
+              <Smartphone className="w-10 h-10 text-primary mx-auto mb-4" />
+              <h4 className="font-semibold mb-2">Any App Works</h4>
+              <p className="text-sm text-muted-foreground">
+                iMessage, WhatsApp, Instagram, Discord, Telegram, and more
+              </p>
+            </Card>
+
+            <Card className="p-6 text-center hover:shadow-card transition-all duration-300 md:col-span-2 lg:col-span-1">
+              <Upload className="w-10 h-10 text-primary mx-auto mb-4" />
+              <h4 className="font-semibold mb-2">Quick Processing</h4>
+              <p className="text-sm text-muted-foreground">
+                Your clone will be ready to chat in under 2 minutes
+              </p>
+            </Card>
+          </div>
+
+          {/* Next Step */}
+          <div className="text-center mt-12">
+            <Button 
+              variant="hero" 
+              size="lg" 
+              disabled={uploadedCount === 0}
+              className="min-w-48"
+            >
+              {uploadedCount > 0 ? `Create Clone (${uploadedCount} files)` : 'Upload Files First'}
+            </Button>
+            {uploadedCount > 0 && (
+              <p className="text-sm text-muted-foreground mt-2">
+                Processing will take about {Math.ceil(uploadedCount / 10)} minute{uploadedCount > 10 ? 's' : ''}
+              </p>
+            )}
           </div>
         </div>
       </div>
