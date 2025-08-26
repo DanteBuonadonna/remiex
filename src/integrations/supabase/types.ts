@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_clones: {
+        Row: {
+          accuracy_score: number | null
+          avatar_url: string | null
+          created_at: string
+          id: string
+          last_active: string | null
+          message_count: number | null
+          name: string
+          personality_description: string | null
+          training_status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          accuracy_score?: number | null
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          last_active?: string | null
+          message_count?: number | null
+          name: string
+          personality_description?: string | null
+          training_status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          accuracy_score?: number | null
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          last_active?: string | null
+          message_count?: number | null
+          name?: string
+          personality_description?: string | null
+          training_status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       kv_store_93a967d9: {
         Row: {
           key: string
@@ -26,6 +68,33 @@ export type Database = {
         Update: {
           key?: string
           value?: Json
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -44,6 +113,36 @@ export type Database = {
           id?: string
           key_name?: string
           key_value?: string
+        }
+        Relationships: []
+      }
+      uploaded_files: {
+        Row: {
+          created_at: string
+          file_name: string
+          file_path: string
+          file_size: number | null
+          id: string
+          processing_status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          id?: string
+          processing_status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          id?: string
+          processing_status?: string
+          user_id?: string
         }
         Relationships: []
       }
