@@ -53,7 +53,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signUp = async (email: string, password: string, displayName?: string) => {
     const redirectUrl = `${window.location.origin}/`;
     
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -63,6 +63,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
     });
+
+    // Send confirmation email via our edge function
+    if (data.user && !error) {
+      try {
+        const confirmationUrl = `${window.location.origin}/auth/confirm?token=${data.session?.access_token || ''}&email=${email}`;
+        
+        await supabase.functions.invoke('send-confirmation', {
+          body: {
+            email,
+            name: displayName,
+            confirmationUrl
+          }
+        });
+        
+        console.log('Confirmation email sent successfully');
+      } catch (emailError) {
+        console.error('Failed to send confirmation email:', emailError);
+        // Don't fail the signup if email sending fails
+      }
+    }
+
     return { error };
   };
 

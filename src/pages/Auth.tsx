@@ -39,8 +39,13 @@ const Auth = () => {
     } else {
       toast({
         title: "Success!",
-        description: "Please check your email to confirm your account.",
+        description: "Account created! Please check your email for a confirmation link to complete your registration.",
+        duration: 10000,
       });
+      // Reset form
+      setEmail('');
+      setPassword('');
+      setDisplayName('');
     }
 
     setLoading(false);
