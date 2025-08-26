@@ -6,11 +6,11 @@ const HeroSection = () => {
     <section className="min-h-screen flex items-center justify-center px-6">
       <div className="max-w-4xl mx-auto text-center space-y-12">
         {/* Logo/Brand */}
-        <div className="flex items-center justify-center gap-4">
-          <div className="p-4 rounded-full bg-gradient-primary">
-            <MessageCircle className="w-12 h-12 text-white" />
+        <div className="flex items-center justify-center gap-6">
+          <div className="p-6 rounded-full bg-gradient-primary">
+            <MessageCircle className="w-16 h-16 text-white" />
           </div>
-          <h1 className="text-6xl font-bold text-foreground">
+          <h1 className="text-8xl font-bold text-foreground">
             Remi
           </h1>
         </div>
