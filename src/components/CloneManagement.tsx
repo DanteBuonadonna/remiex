@@ -2,50 +2,70 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { MessageCircle, Settings, Plus, Crown } from "lucide-react";
 import { useClones } from "@/hooks/useClones";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { supabase } from "@/integrations/supabase/client";
 import avatarPlaceholder from "@/assets/avatar-placeholder.jpg";
+import EnhancedCloneCreation from "./EnhancedCloneCreation";
+import ChatInterface from "./ChatInterface";
 
 const CloneManagement = () => {
-  const { clones, loading, createClone } = useClones();
-  const [newCloneName, setNewCloneName] = useState('');
-  const [newCloneDescription, setNewCloneDescription] = useState('');
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const { clones, loading, refetchClones } = useClones();
+  const [view, setView] = useState<'list' | 'create' | 'chat'>('list');
+  const [selectedClone, setSelectedClone] = useState<any>(null);
+  const [isSubscribed, setIsSubscribed] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
-  const handleCreateClone = async () => {
-    if (!newCloneName.trim()) {
+  useEffect(() => {
+    checkSubscription();
+  }, [user]);
+
+  const checkSubscription = async () => {
+    if (!user) return;
+
+    try {
+      const { data } = await supabase.functions.invoke('check-subscription');
+      setIsSubscribed(data?.subscribed || false);
+    } catch (error) {
+      console.error('Error checking subscription:', error);
+    }
+  };
+
+  const handleUpgradeClick = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase.functions.invoke('create-checkout');
+      if (error) throw error;
+      
+      // Open Stripe checkout in new tab
+      window.open(data.url, '_blank');
+    } catch (error) {
+      console.error('Error creating checkout:', error);
       toast({
         title: "Error",
-        description: "Please enter a name for your clone",
+        description: "Failed to start checkout process",
         variant: "destructive",
       });
-      return;
     }
+  };
 
-    const result = await createClone(newCloneName, newCloneDescription);
-    
-    if (result) {
-      toast({
-        title: "Success!",
-        description: "Clone created successfully",
-      });
-      setNewCloneName('');
-      setNewCloneDescription('');
-      setDialogOpen(false);
-    } else {
-      toast({
-        title: "Error",
-        description: "Failed to create clone",
-        variant: "destructive",
-      });
-    }
+  const handleCloneCreated = (cloneId: string) => {
+    refetchClones();
+    setView('list');
+    toast({
+      title: "Success!",
+      description: "Your clone is ready to chat!",
+    });
+  };
+
+  const handleChatClick = (clone: any) => {
+    setSelectedClone(clone);
+    setView('chat');
   };
 
   if (loading) {
@@ -54,6 +74,34 @@ const CloneManagement = () => {
         <div className="max-w-6xl mx-auto text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
           <p className="mt-4 text-muted-foreground">Loading your clones...</p>
+        </div>
+      </section>
+    );
+  }
+
+  if (view === 'create') {
+    return (
+      <section className="py-20 px-6">
+        <div className="max-w-4xl mx-auto">
+          <EnhancedCloneCreation
+            onBack={() => setView('list')}
+            onCloneCreated={handleCloneCreated}
+          />
+        </div>
+      </section>
+    );
+  }
+
+  if (view === 'chat' && selectedClone) {
+    return (
+      <section className="py-20 px-6">
+        <div className="max-w-4xl mx-auto">
+          <Card className="overflow-hidden">
+            <ChatInterface
+              clone={selectedClone}
+              onBack={() => setView('list')}
+            />
+          </Card>
         </div>
       </section>
     );
@@ -143,6 +191,7 @@ const CloneManagement = () => {
                       size="sm" 
                       className="flex-1"
                       disabled={clone.training_status !== "completed"}
+                      onClick={() => handleChatClick(clone)}
                     >
                       <MessageCircle className="w-4 h-4 mr-1" />
                       Chat
@@ -157,54 +206,25 @@ const CloneManagement = () => {
           })}
 
           {/* Add New Clone Card */}
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <Card className="p-6 border-dashed border-primary/30 hover:border-primary/50 transition-colors cursor-pointer group">
-                <div className="h-full flex flex-col items-center justify-center text-center space-y-4 group-hover:scale-105 transition-transform">
-                  <div className="p-4 rounded-full bg-gradient-primary/10 group-hover:bg-gradient-primary/20 transition-colors">
-                    <Plus className="w-8 h-8 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-2">Create New Clone</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Create another personality clone
-                    </p>
-                  </div>
-                  <Button variant="outline" size="sm" className="mt-2 pointer-events-none">
-                    Get Started
-                  </Button>
-                </div>
-              </Card>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Create New AI Clone</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="clone-name">Clone Name</Label>
-                  <Input
-                    id="clone-name"
-                    placeholder="Enter the person's name you want to clone"
-                    value={newCloneName}
-                    onChange={(e) => setNewCloneName(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="clone-description">Personality Description (Optional)</Label>
-                  <Textarea
-                    id="clone-description"
-                    placeholder="Describe their personality, communication style, or any other details..."
-                    value={newCloneDescription}
-                    onChange={(e) => setNewCloneDescription(e.target.value)}
-                  />
-                </div>
-                <Button onClick={handleCreateClone} className="w-full">
-                  Create Clone
-                </Button>
+          <Card 
+            className="p-6 border-dashed border-primary/30 hover:border-primary/50 transition-colors cursor-pointer group"
+            onClick={() => setView('create')}
+          >
+            <div className="h-full flex flex-col items-center justify-center text-center space-y-4 group-hover:scale-105 transition-transform">
+              <div className="p-4 rounded-full bg-gradient-primary/10 group-hover:bg-gradient-primary/20 transition-colors">
+                <Plus className="w-8 h-8 text-primary" />
               </div>
-            </DialogContent>
-          </Dialog>
+              <div>
+                <h3 className="font-semibold mb-2">Create New Clone</h3>
+                <p className="text-sm text-muted-foreground">
+                  Create another personality clone
+                </p>
+              </div>
+              <Button variant="outline" size="sm" className="mt-2 pointer-events-none">
+                Get Started
+              </Button>
+            </div>
+          </Card>
         </div>
 
         {/* Free vs Premium */}
@@ -240,8 +260,13 @@ const CloneManagement = () => {
                 <li>✅ Priority processing</li>
                 <li>✅ Export conversations</li>
               </ul>
-              <Button variant="hero" className="w-full">
-                Upgrade for $9/month
+              <Button 
+                variant="hero" 
+                className="w-full"
+                onClick={handleUpgradeClick}
+                disabled={isSubscribed}
+              >
+                {isSubscribed ? 'Current Plan' : 'Upgrade for $9/month'}
               </Button>
             </div>
           </Card>
