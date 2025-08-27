@@ -26,6 +26,7 @@ export type Database = {
           personality_description: string | null
           training_status: string
           updated_at: string
+          uploaded_image_count: number | null
           user_id: string
         }
         Insert: {
@@ -39,6 +40,7 @@ export type Database = {
           personality_description?: string | null
           training_status?: string
           updated_at?: string
+          uploaded_image_count?: number | null
           user_id: string
         }
         Update: {
@@ -52,9 +54,45 @@ export type Database = {
           personality_description?: string | null
           training_status?: string
           updated_at?: string
+          uploaded_image_count?: number | null
           user_id?: string
         }
         Relationships: []
+      }
+      chat_messages: {
+        Row: {
+          clone_id: string | null
+          created_at: string | null
+          id: string
+          message: string
+          role: string
+          user_id: string | null
+        }
+        Insert: {
+          clone_id?: string | null
+          created_at?: string | null
+          id?: string
+          message: string
+          role: string
+          user_id?: string | null
+        }
+        Update: {
+          clone_id?: string | null
+          created_at?: string | null
+          id?: string
+          message?: string
+          role?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_clone_id_fkey"
+            columns: ["clone_id"]
+            isOneToOne: false
+            referencedRelation: "ai_clones"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       kv_store_93a967d9: {
         Row: {
@@ -113,6 +151,42 @@ export type Database = {
           id?: string
           key_name?: string
           key_value?: string
+        }
+        Relationships: []
+      }
+      subscribers: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          stripe_customer_id: string | null
+          subscribed: boolean
+          subscription_end: string | null
+          subscription_tier: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          stripe_customer_id?: string | null
+          subscribed?: boolean
+          subscription_end?: string | null
+          subscription_tier?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          stripe_customer_id?: string | null
+          subscribed?: boolean
+          subscription_end?: string | null
+          subscription_tier?: string | null
+          updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
