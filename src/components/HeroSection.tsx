@@ -21,9 +21,11 @@ const HeroSection = () => {
       <div className="max-w-4xl mx-auto text-center space-y-12">
         {/* Logo/Brand */}
         <div className="flex items-center justify-center gap-6">
-          <div className="p-4 rounded-full bg-gradient-primary">
-            <MessageCircle className="w-10 h-10 text-white" />
-          </div>
+          <img 
+            src="/lovable-uploads/095cbc89-efc6-43e1-9694-05d55aaf5d15.png" 
+            alt="Remi Logo" 
+            className="w-16 h-16"
+          />
           <h1 className="text-8xl font-bold text-foreground">
             Remi
           </h1>

@@ -21,9 +21,11 @@ const Navbar = () => {
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3">
-          <div className="p-2 rounded-full bg-gradient-primary">
-            <MessageCircle className="w-6 h-6 text-white" />
-          </div>
+          <img 
+            src="/lovable-uploads/095cbc89-efc6-43e1-9694-05d55aaf5d15.png" 
+            alt="Remi Logo" 
+            className="w-8 h-8"
+          />
           <span className="text-2xl font-bold text-foreground">Remi</span>
         </Link>
 
