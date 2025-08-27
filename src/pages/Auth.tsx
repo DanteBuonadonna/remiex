@@ -38,9 +38,8 @@ const Auth = () => {
       });
     } else {
       toast({
-        title: "Success!",
-        description: "Account created! Please check your email for a confirmation link to complete your registration.",
-        duration: 10000,
+        title: "Welcome to Remi!",
+        description: "Your account has been created successfully. You can now start creating AI clones!",
       });
       // Reset form
       setEmail('');
@@ -78,9 +77,11 @@ const Auth = () => {
       <div className="w-full max-w-md space-y-8">
         {/* Logo */}
         <div className="flex items-center justify-center gap-4">
-          <div className="p-3 rounded-full bg-gradient-primary">
-            <MessageCircle className="w-8 h-8 text-white" />
-          </div>
+          <img 
+            src="/lovable-uploads/095cbc89-efc6-43e1-9694-05d55aaf5d15.png" 
+            alt="Remi Logo" 
+            className="w-12 h-12"
+          />
           <h1 className="text-4xl font-bold text-foreground">Remi</h1>
         </div>
 
